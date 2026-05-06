@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moh Maya Media Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/dock.css" />
+  <link rel="stylesheet" href="css/panels.css" />
+  <link rel="stylesheet" href="css/center.css" />
+  <link rel="stylesheet" href="css/wallpaper.css" />
+</head>
+<body>
+
+  <!-- BACKGROUND LAYERS -->
+  <canvas id="bg-canvas"></canvas>
+  <img    id="bg-img" alt="" />
+  <video  id="bg-vid" autoplay loop muted playsinline></video>
+  <div class="blur-layer" id="blur-l"></div>
+  <div class="dim-layer"  id="dim-l"></div>
+
+  <!-- APP ROOT -->
+  <div class="app" id="app">
+
+    <!-- TOP-RIGHT ACTIONS -->
+    <div class="tr-actions" id="tr-actions">
+      <div class="tr-btn" id="notif-btn" title="Notifications">
+        <i class="ti ti-bell" aria-hidden="true"></i>
+      </div>
+      <div class="tr-btn" id="focus-mode-btn" title="Focus Mode">
+        <i class="ti ti-focus" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <!-- FLOATING DOCK -->
+    <nav class="dock" id="dock" aria-label="Main navigation dock">
+      <div class="dock-logo" id="dock-logo" title="Moh Maya Media">M</div>
+      <div class="dock-sep"></div>
+
+      <div class="di" id="di-bookmarks" data-panel="bookmarks" title="Bookmarks">
+        <i class="ti ti-bookmark" aria-hidden="true"></i>
+        <span class="di-tip">Bookmarks</span>
+      </div>
+      <div class="di" id="di-todo" data-panel="todo" title="To-Do">
+        <i class="ti ti-check" aria-hidden="true"></i>
+        <span class="di-tip">To-Do</span>
+      </div>
+      <div class="di" id="di-weather" data-panel="weather" title="Weather">
+        <i class="ti ti-cloud" aria-hidden="true"></i>
+        <span class="di-tip">Weather</span>
+      </div>
+      <div class="di" id="di-notes" data-panel="notes" title="Notes">
+        <i class="ti ti-note" aria-hidden="true"></i>
+        <span class="di-tip">Notes</span>
+      </div>
+      <div class="di" id="di-focus" data-panel="focus" title="Focus Timer">
+        <i class="ti ti-clock" aria-hidden="true"></i>
+        <span class="di-tip">Focus Timer</span>
+      </div>
+      <div class="di" id="di-ai" data-panel="ai" title="AI Hub">
+        <i class="ti ti-cpu" aria-hidden="true"></i>
+        <span class="di-tip">AI Hub</span>
+      </div>
+
+      <div class="dock-sep"></div>
+
+      <div class="di" id="di-wallpaper" data-panel="wallpaper" title="Wallpaper">
+        <i class="ti ti-photo" aria-hidden="true"></i>
+        <span class="di-tip">Wallpaper</span>
+      </div>
+      <div class="di" id="di-settings" data-panel="settings" title="Settings">
+        <i class="ti ti-settings" aria-hidden="true"></i>
+        <span class="di-tip">Settings</span>
+      </div>
+    </nav>
+
+    <!-- PANELS (injected by panels.js) -->
+    <div id="panels-root"></div>
+
+    <!-- CENTER CONTENT -->
+    <main class="center" id="center" aria-label="Dashboard center">
+
+      <section class="hero" aria-label="Time and greeting">
+        <div class="clock" id="clk" aria-live="polite">00:00</div>
+        <div class="hero-date"  id="hd"></div>
+        <div class="hero-greet" id="hg"></div>
+      </section>
+
+      <div class="search-center" id="search-bar" role="search">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <input type="text" id="s-inp" placeholder="Search the web or your bookmarks…"
+               autocomplete="off" aria-label="Search" />
+        <span class="search-eng" id="search-eng">Google</span>
+      </div>
+
+      <div class="stats-center" id="stats-center" aria-label="Productivity stats">
+        <div class="stat-pill">
+          <div class="stat-pill-v" id="stat-tasks">0</div>
+          <div class="stat-pill-l">Tasks Done</div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-pill-v" id="stat-focus">0%</div>
+          <div class="stat-pill-l">Focus Score</div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-pill-v" id="stat-streak">0🔥</div>
+          <div class="stat-pill-l">Day Streak</div>
+        </div>
+      </div>
+
+      <div class="quote-strip" id="quote-strip">
+        <i class="ti ti-quote" aria-hidden="true"></i>
+        <div>
+          <div class="quote-text" id="qt"></div>
+          <div class="quote-by"   id="qa"></div>
+        </div>
+      </div>
+
+    </main>
+
+  </div><!-- /app -->
+
+  <!-- COMMAND PALETTE -->
+  <div id="cmd-palette" role="dialog" aria-modal="true" aria-label="Command palette" style="display:none">
+    <div class="cmd-backdrop"></div>
+    <div class="cmd-box">
+      <div class="cmd-search-row">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <input type="text" id="cmd-inp" placeholder="Search bookmarks, tasks, notes, AI tools…"
+               autocomplete="off" spellcheck="false" />
+        <kbd>ESC</kbd>
+      </div>
+      <div class="cmd-results" id="cmd-results"></div>
+      <div class="cmd-footer">
+        <span><kbd>↑↓</kbd> navigate</span>
+        <span><kbd>↵</kbd> open</span>
+        <span><kbd>ESC</kbd> close</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS (order matters: data → storage → modules → app) -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/wallpaper.js"></script>
+  <script src="js/clock.js"></script>
+  <script src="js/panels.js"></script>
+  <script src="js/bookmarks.js"></script>
+  <script src="js/todo.js"></script>
+  <script src="js/notes.js"></script>
+  <script src="js/timer.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

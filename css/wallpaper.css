@@ -1,0 +1,169 @@
+/* ============================================================
+   MOH MAYA MEDIA — wallpaper.css
+   Wallpaper panel specific styles
+   ============================================================ */
+
+/* ── TAB ROW ── */
+.wp-tabs {
+  display: flex;
+  gap: 0;
+  border-radius: 11px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.wp-tab {
+  flex: 1;
+  padding: 8px;
+  text-align: center;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--text2);
+  transition: all 0.15s;
+  font-weight: 500;
+  border-right: 1px solid var(--border);
+}
+.wp-tab:last-child { border-right: none; }
+.wp-tab.on { background: var(--glass2); color: var(--text); }
+
+/* ── PRESET GRID ── */
+.wp-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.wp-preset-card {
+  border-radius: 12px;
+  height: 58px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+.wp-preset-card:hover  { transform: scale(1.03); }
+.wp-preset-card.sel    { border-color: rgba(255,255,255,0.9); }
+.wp-preset-card span {
+  position: absolute;
+  bottom: 4px; left: 0; right: 0;
+  text-align: center;
+  font-size: 9px;
+  color: rgba(255,255,255,0.9);
+  font-weight: 600;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+/* ── UPLOAD AREA ── */
+.wp-upload-zone {
+  border: 1.5px dashed var(--border2);
+  border-radius: 13px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--glass);
+}
+.wp-upload-zone:hover { border-color: var(--a1); background: var(--glass2); }
+.wp-upload-zone i { font-size: 28px; color: var(--text3); display: block; margin-bottom: 8px; }
+.wp-upload-zone p     { font-size: 12px; color: var(--text2); margin-bottom: 3px; }
+.wp-upload-zone small { font-size: 10px; color: var(--text3); }
+
+/* ── FILE INFO BAR ── */
+.wp-file-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: rgba(110,245,176,0.1);
+  border: 1px solid rgba(110,245,176,0.25);
+  border-radius: 10px;
+  margin-top: 8px;
+}
+.wp-file-bar i      { color: var(--a5); font-size: 16px; }
+.wp-file-bar span   { font-size: 11px; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wp-file-bar button {
+  font-size: 10px; color: var(--a3);
+  background: none; border: none; cursor: pointer;
+  font-family: 'Sora', sans-serif; font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ── COLOR PICKER ── */
+.wp-color-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.wp-color-row input[type="color"] {
+  width: 48px; height: 48px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  padding: 4px;
+  background: var(--glass);
+}
+.wp-color-row span { font-size: 12px; color: var(--text2); }
+.wp-color-swatches { display: flex; gap: 7px; flex-wrap: wrap; }
+.wp-color-swatch {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+}
+.wp-color-swatch:hover { transform: scale(1.12); border-color: rgba(255,255,255,0.4); }
+
+/* ── SLIDERS ── */
+.wp-sliders {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wp-sl-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.wp-sl-label { font-size: 11px; color: var(--text2); width: 72px; flex-shrink: 0; }
+.wp-sl-row input[type="range"] { flex: 1; }
+.wp-sl-val {
+  font-size: 11px;
+  color: var(--a1);
+  width: 32px;
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── ACTION BUTTONS ── */
+.wp-apply-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 11px;
+  border: none;
+  background: linear-gradient(135deg, var(--a1), var(--a2));
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Sora', sans-serif;
+  transition: all 0.18s;
+  margin-top: 10px;
+}
+.wp-apply-btn:hover { opacity: 0.9; transform: scale(1.01); }
+
+.wp-reset-btn {
+  width: 100%;
+  padding: 9px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--glass);
+  color: var(--text2);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'Sora', sans-serif;
+  transition: all 0.18s;
+  margin-top: 6px;
+}
+.wp-reset-btn:hover { border-color: var(--border2); color: var(--text); }

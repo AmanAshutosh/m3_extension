@@ -1,0 +1,141 @@
+/* ============================================================
+   MOH MAYA MEDIA — dock.css
+   Floating left-center pill dock
+   ============================================================ */
+
+.dock {
+  position: fixed;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+
+  padding: 10px 6px;
+  border-radius: 28px;
+
+  background: var(--glass2);
+  backdrop-filter: blur(var(--blur-dock));
+  -webkit-backdrop-filter: blur(var(--blur-dock));
+  border: 1px solid var(--border2);
+  box-shadow:
+    0 8px 40px rgba(0,0,0,0.38),
+    inset 0 1px 0 rgba(255,255,255,0.14),
+    inset 0 -1px 0 rgba(0,0,0,0.12);
+
+  transition: box-shadow 0.3s var(--ease);
+  user-select: none;
+}
+.dock:hover {
+  box-shadow:
+    0 12px 48px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    inset 0 -1px 0 rgba(0,0,0,0.14);
+}
+
+/* ── LOGO BADGE ── */
+.dock-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--a1), var(--a2), var(--a3));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-bottom: 4px;
+  box-shadow: 0 4px 18px rgba(110,158,245,0.35);
+  transition: transform 0.18s var(--ease), box-shadow 0.18s;
+  letter-spacing: -0.5px;
+}
+.dock-logo:hover {
+  transform: scale(1.07);
+  box-shadow: 0 6px 24px rgba(176,110,245,0.5);
+}
+
+/* ── SEPARATOR ── */
+.dock-sep {
+  width: 26px;
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+/* ── DOCK ICON BUTTON ── */
+.di {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 20px;
+  transition: all 0.18s var(--ease);
+  position: relative;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+.di:hover {
+  background: var(--glass3);
+  color: var(--text);
+}
+.di.active {
+  background: linear-gradient(
+    135deg,
+    rgba(176,110,245,0.22),
+    rgba(110,158,245,0.18)
+  );
+  border-color: rgba(176,110,245,0.38);
+  color: var(--a1);
+  box-shadow: 0 0 14px rgba(176,110,245,0.18);
+}
+
+/* ── TOOLTIP ── */
+.di-tip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+
+  background: var(--glass3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+  z-index: 100;
+}
+.di:hover .di-tip { opacity: 1; }
+
+/* ── NOTIFICATION DOT ── */
+.di-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--a3);
+  border: 1.5px solid rgba(11,8,24,0.8);
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}

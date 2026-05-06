@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Moh Maya Media — Glass New Tab Dashboard",
+  "version": "3.1.0",
+  "description": "Premium glassmorphic new tab dashboard with live weather, real bookmarks, drag-drop wallpaper, command palette, and persistent widgets.",
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "permissions": [
+    "storage",
+    "bookmarks",
+    "tabs",
+    "geolocation"
+  ],
+  "host_permissions": [
+    "https://api.open-meteo.com/*",
+    "https://nominatim.openstreetmap.org/*",
+    "https://ip-api.com/*",
+    "https://www.google.com/s2/favicons*"
+  ],
+  "icons": {
+    "16":  "icons/icon16.png",
+    "48":  "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16":  "icons/icon16.png",
+      "48":  "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Moh Maya Media Dashboard"
+  }
+}

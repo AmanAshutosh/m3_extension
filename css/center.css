@@ -1,0 +1,191 @@
+/* ============================================================
+   MOH MAYA MEDIA — center.css
+   Fullscreen center content — clock, search, stats, quote
+   ============================================================ */
+
+.center {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  pointer-events: none;
+  z-index: 10;
+}
+.center > * { pointer-events: auto; }
+
+/* ── HERO CLOCK ── */
+.hero { text-align: center; }
+.clock {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(52px, 9vw, 82px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -3px;
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    var(--a1) 40%,
+    var(--a2) 75%,
+    var(--a3) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  user-select: none;
+  transition: font-size 0.3s;
+}
+.hero-date {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 8px;
+  letter-spacing: 0.02em;
+  font-weight: 400;
+}
+.hero-greet {
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 12px;
+  color: var(--text);
+}
+
+/* ── SEARCH BAR ── */
+.search-center {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: min(500px, calc(100vw - 200px));
+  background: var(--glass2);
+  backdrop-filter: blur(var(--blur-widget));
+  -webkit-backdrop-filter: blur(var(--blur-widget));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 13px 18px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+}
+.search-center:focus-within {
+  border-color: var(--a1);
+  box-shadow: 0 8px 32px rgba(176,110,245,0.2);
+}
+.search-center i {
+  color: var(--text3);
+  font-size: 19px;
+  flex-shrink: 0;
+}
+.search-center input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  flex: 1;
+  min-width: 0;
+}
+.search-center input::placeholder { color: var(--text3); }
+.search-eng {
+  font-size: 11px;
+  color: var(--text3);
+  flex-shrink: 0;
+  padding: 3px 9px;
+  background: var(--glass);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.search-eng:hover { color: var(--text2); border-color: var(--border2); }
+
+/* ── STAT PILLS ── */
+.stats-center {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.stat-pill {
+  background: var(--glass2);
+  backdrop-filter: blur(var(--blur-widget));
+  -webkit-backdrop-filter: blur(var(--blur-widget));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 20px;
+  text-align: center;
+  min-width: 90px;
+  transition: all 0.2s var(--ease);
+  cursor: default;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+.stat-pill:hover {
+  background: var(--glass3);
+  border-color: var(--border2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+}
+.stat-pill-v {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--a1), var(--a2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.stat-pill-l {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* ── DAILY QUOTE ── */
+.quote-strip {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: min(500px, calc(100vw - 200px));
+  background: var(--glass);
+  backdrop-filter: blur(var(--blur-widget));
+  -webkit-backdrop-filter: blur(var(--blur-widget));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 13px 16px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.15);
+}
+.quote-strip i {
+  color: var(--a1);
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.quote-text {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.7;
+  font-style: italic;
+}
+.quote-by {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* ── FOCUS MODE (hides stats/quote) ── */
+body.focus-mode .stats-center,
+body.focus-mode .quote-strip {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.4s, transform 0.4s;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .center { gap: 14px; }
+  .clock  { font-size: 52px; letter-spacing: -2px; }
+}
