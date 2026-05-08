@@ -102,7 +102,7 @@ const Bookmarks = (() => {
       const isCustom = idx < customInCat.length;
       return `
         <div class="bm-card" data-url="${_escAttr(b.u)}" title="${_escAttr(b.n)}" role="link" tabindex="0">
-          <div class="bm-card-ico">${b.i || _faviconImg(b.u) || _defaultIcon(b.n)}</div>
+          <div class="bm-card-ico">${_faviconImg(b.u) || _defaultIcon(b.n)}</div>
           <div class="bm-card-name">${_esc(b.n)}</div>
           ${isCustom ? `<div class="bm-card-del" data-custom-idx="${idx}" title="Remove">×</div>` : ''}
         </div>`;
@@ -177,7 +177,7 @@ const Bookmarks = (() => {
   function _faviconImg(url) {
     try {
       const host = new URL(url).hostname;
-      return `<img src="https://www.google.com/s2/favicons?sz=32&domain=${host}" width="20" height="20" style="border-radius:4px" onerror="this.replaceWith('🔗')" />`;
+      return `<img src="https://www.google.com/s2/favicons?sz=64&domain=${host}" alt="" class="bm-favicon" />`;
     } catch { return null; }
   }
 

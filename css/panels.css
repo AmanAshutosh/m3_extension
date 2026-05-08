@@ -160,7 +160,27 @@
 }
 .bm-card:hover { border-color: var(--a1); transform: translateY(-2px); }
 .bm-card:hover::before { opacity: 1; }
-.bm-card-ico { font-size: 22px; line-height: 1; }
+.bm-card-ico {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: var(--glass2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--a1);
+  flex-shrink: 0;
+}
+.bm-favicon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  border-radius: 4px;
+}
 .bm-card-name {
   font-size: 10px;
   color: var(--text2);

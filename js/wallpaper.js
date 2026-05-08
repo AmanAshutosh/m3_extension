@@ -147,14 +147,14 @@ const Wallpaper = (() => {
   function _showImage(src) {
     _stopCanvas();
     bgImg.src = src;
-    bgImg.style.display = '';
+    bgImg.style.display = 'block';
     bgVid.style.display = 'none';
   }
 
   function _showVideo(src) {
     _stopCanvas();
     bgVid.src = src;
-    bgVid.style.display = '';
+    bgVid.style.display = 'block';
     bgImg.style.display = 'none';
     bgVid.play().catch(() => {});
   }
