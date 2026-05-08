@@ -45,7 +45,7 @@ const WallpaperPanel = (() => {
         <div class="wp-file-bar" id="wp-ph-bar" style="display:none">
           <i class="ti ti-photo-check"></i>
           <span id="wp-ph-name">photo.jpg</span>
-          <button onclick="WallpaperPanel.removeMedia('ph')">Remove</button>
+          <button id="wp-ph-remove-btn">Remove</button>
         </div>
       </div>
 
@@ -60,7 +60,7 @@ const WallpaperPanel = (() => {
         <div class="wp-file-bar" id="wp-vi-bar" style="display:none">
           <i class="ti ti-video"></i>
           <span id="wp-vi-name">video.mp4</span>
-          <button onclick="WallpaperPanel.removeMedia('vi')">Remove</button>
+          <button id="wp-vi-remove-btn">Remove</button>
         </div>
       </div>
 
@@ -87,7 +87,7 @@ const WallpaperPanel = (() => {
         </div>
       </div>
 
-      <button class="wp-reset-btn" onclick="WallpaperPanel.resetAll()">
+      <button class="wp-reset-btn" id="wp-reset-btn">
         <i class="ti ti-refresh"></i> Reset to Default
       </button>`;
   }
@@ -164,6 +164,14 @@ const WallpaperPanel = (() => {
     const clPick = document.getElementById('wp-cl-pick');
     if (clPick) clPick.addEventListener('input', e => Wallpaper.applyColor(e.target.value));
 
+    /* Remove media buttons */
+    const phRemove = document.getElementById('wp-ph-remove-btn');
+    const viRemove = document.getElementById('wp-vi-remove-btn');
+    const resetBtn = document.getElementById('wp-reset-btn');
+    if (phRemove) phRemove.addEventListener('click', () => removeMedia('ph'));
+    if (viRemove) viRemove.addEventListener('click', () => removeMedia('vi'));
+    if (resetBtn) resetBtn.addEventListener('click', () => resetAll());
+
     /* Show saved tab */
     const savedType = MohMayaMediaState.get('wpType');
     if (savedType === 'image')  _switchTab('ph');
@@ -178,18 +186,35 @@ const WallpaperPanel = (() => {
     grid.innerHTML = WP_PRESETS.map((p, i) => `
       <div class="wp-preset-card${i === selIdx ? ' sel' : ''}"
            style="background:radial-gradient(ellipse at 30% 40%,${p.c[1]},${p.c[0]})"
-           onclick="WallpaperPanel.selectPreset(${i},this)">
+           data-idx="${i}">
         <span>${p.n}</span>
       </div>`).join('');
+
+    grid.addEventListener('click', e => {
+      const card = e.target.closest('.wp-preset-card');
+      if (!card) return;
+      document.querySelectorAll('.wp-preset-card').forEach(c => c.classList.remove('sel'));
+      card.classList.add('sel');
+      Wallpaper.applyPreset(+card.dataset.idx);
+      showToast('Preset applied ✓');
+    });
   }
 
   function _buildSwatches() {
     const el = document.getElementById('wp-cl-swatches');
     if (!el) return;
     el.innerHTML = COLOR_SWATCHES.map(c => `
-      <div class="wp-color-swatch" style="background:${c}" title="${c}"
-           onclick="Wallpaper.applyColor('${c}');document.getElementById('wp-cl-pick').value='${c}'">
-      </div>`).join('');
+      <div class="wp-color-swatch" style="background:${c}" title="${c}" data-color="${c}"></div>`
+    ).join('');
+
+    el.addEventListener('click', e => {
+      const swatch = e.target.closest('.wp-color-swatch');
+      if (!swatch) return;
+      const color = swatch.dataset.color;
+      Wallpaper.applyColor(color);
+      const pick = document.getElementById('wp-cl-pick');
+      if (pick) pick.value = color;
+    });
   }
 
   function _switchTab(tab) {
@@ -213,13 +238,6 @@ const WallpaperPanel = (() => {
     });
   }
 
-  function selectPreset(idx, el) {
-    document.querySelectorAll('.wp-preset-card').forEach(c => c.classList.remove('sel'));
-    el.classList.add('sel');
-    Wallpaper.applyPreset(idx);
-    showToast('Preset applied ✓');
-  }
-
   async function removeMedia(type) {
     document.getElementById('wp-' + type + '-bar').style.display = 'none';
     await Wallpaper.reset();
@@ -233,7 +251,7 @@ const WallpaperPanel = (() => {
     showToast('Wallpaper reset to default', 'info');
   }
 
-  return { render, selectPreset, removeMedia, resetAll };
+  return { render, removeMedia, resetAll };
 })();
 
 
@@ -260,7 +278,7 @@ const Settings = (() => {
           <div class="setting-lbl">Dark / Light Mode</div>
           <div class="setting-sub">Toggle theme</div>
         </div>
-        <div class="tog${s.isDark ? '' : ' on'}" id="theme-tog" onclick="Settings.toggleTheme()"></div>
+        <div class="tog${s.isDark ? '' : ' on'}" id="theme-tog"></div>
       </div>
 
       <div class="setting-row">
@@ -269,14 +287,14 @@ const Settings = (() => {
           ${ACCENT_PALETTES.map((p, i) => `
             <div class="sw${JSON.stringify(s.accents) === JSON.stringify(p.colors) ? ' sel' : ''}"
                  style="background:linear-gradient(135deg,${p.colors[0]},${p.colors[1]})"
-                 onclick="Settings.setAccent(${i},this)" title="${p.label}"></div>`).join('')}
+                 data-idx="${i}" title="${p.label}"></div>`).join('')}
         </div>
       </div>
 
       <div class="setting-row">
         <div class="setting-lbl">Glass Intensity</div>
         <input type="range" min="1" max="10" step="1" value="${s.glassIntensity}"
-               style="width:120px" oninput="Settings.setGlass(+this.value)" />
+               style="width:120px" id="glass-sl" />
       </div>
 
       <!-- Clock -->
@@ -285,7 +303,7 @@ const Settings = (() => {
 
       <div class="setting-row">
         <div class="setting-lbl">24-hour format</div>
-        <div class="tog${s.is24h ? ' on' : ''}" id="h24-tog" onclick="Settings.toggle24h(this)"></div>
+        <div class="tog${s.is24h ? ' on' : ''}" id="h24-tog"></div>
       </div>
 
       <!-- Identity -->
@@ -295,8 +313,7 @@ const Settings = (() => {
       <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:6px">
         <div class="setting-lbl">Your Name</div>
         <input type="text" id="user-name-inp" value="${_esc(s.userName || '')}"
-               placeholder="Enter your name…" class="setting-text-inp"
-               oninput="Settings.setUserName(this.value)" />
+               placeholder="Enter your name…" class="setting-text-inp" />
       </div>
 
       <!-- Weather -->
@@ -305,9 +322,9 @@ const Settings = (() => {
 
       <div class="setting-row">
         <div class="setting-lbl">Temperature Unit</div>
-        <div style="display:flex;gap:6px">
-          <div class="unit-btn${s.isCelsius !== false ? ' on' : ''}" onclick="Settings.setTempUnit(true,this)">°C</div>
-          <div class="unit-btn${s.isCelsius === false ? ' on' : ''}" onclick="Settings.setTempUnit(false,this)">°F</div>
+        <div style="display:flex;gap:6px" id="temp-unit-row">
+          <div class="unit-btn${s.isCelsius !== false ? ' on' : ''}" data-celsius="true">°C</div>
+          <div class="unit-btn${s.isCelsius === false ? ' on' : ''}" data-celsius="false">°F</div>
         </div>
       </div>
 
@@ -320,8 +337,7 @@ const Settings = (() => {
           <div class="setting-lbl">Open links in new tab</div>
           <div class="setting-sub">Bookmarks &amp; search results</div>
         </div>
-        <div class="tog${s.openInNewTab !== false ? ' on' : ''}" id="newtab-tog"
-             onclick="Settings.toggleNewTab(this)"></div>
+        <div class="tog${s.openInNewTab !== false ? ' on' : ''}" id="newtab-tog"></div>
       </div>
 
       <!-- Dashboard widgets -->
@@ -331,17 +347,17 @@ const Settings = (() => {
       <div class="setting-row">
         <div class="setting-lbl">Show Stats Row</div>
         <div class="tog${s.showStats ? ' on' : ''}"
-             onclick="Settings.toggleWidget('showStats','stats-center',this)"></div>
+             data-widget-key="showStats" data-widget-el="stats-center"></div>
       </div>
       <div class="setting-row">
         <div class="setting-lbl">Show Daily Quote</div>
         <div class="tog${s.showQuote ? ' on' : ''}"
-             onclick="Settings.toggleWidget('showQuote','quote-strip',this)"></div>
+             data-widget-key="showQuote" data-widget-el="quote-strip"></div>
       </div>
       <div class="setting-row">
         <div class="setting-lbl">Show Search Bar</div>
         <div class="tog${s.showSearch ? ' on' : ''}"
-             onclick="Settings.toggleWidget('showSearch','search-bar',this)"></div>
+             data-widget-key="showSearch" data-widget-el="search-bar"></div>
       </div>
 
       <!-- About -->
@@ -350,13 +366,13 @@ const Settings = (() => {
         <div class="about-logo-text">Moh Maya Media</div>
         <div class="about-version">v3.1.0 · Chrome Extension MV3</div>
         <div class="about-links">
-          <div class="about-link" onclick="window.open('https://github.com/mohmaayamedia','_blank')">
+          <div class="about-link" data-href="https://github.com/mohmaayamedia">
             <i class="ti ti-brand-github"></i>GitHub
           </div>
-          <div class="about-link" onclick="window.open('https://linkedin.com','_blank')">
+          <div class="about-link" data-href="https://linkedin.com">
             <i class="ti ti-brand-linkedin"></i>LinkedIn
           </div>
-          <div class="about-link" onclick="window.open('mailto:contact@mohmaaya.com','_blank')">
+          <div class="about-link" data-href="mailto:contact@mohmaaya.com">
             <i class="ti ti-mail"></i>Contact
           </div>
         </div>
@@ -364,12 +380,55 @@ const Settings = (() => {
   }
 
   function _wire() {
-    /* Name input — debounced */
+    /* Name input */
     const nameInp = document.getElementById('user-name-inp');
-    if (nameInp && !nameInp._swWired) {
-      nameInp._swWired = true;
-      nameInp.addEventListener('input', e => setUserName(e.target.value));
+    if (nameInp) nameInp.addEventListener('input', e => setUserName(e.target.value));
+
+    /* Theme toggle */
+    const themeTog = document.getElementById('theme-tog');
+    if (themeTog) themeTog.addEventListener('click', () => toggleTheme());
+
+    /* Accent swatches — event delegation on container */
+    const accentRow = document.getElementById('accent-swatches');
+    if (accentRow) {
+      accentRow.addEventListener('click', e => {
+        const sw = e.target.closest('.sw');
+        if (sw) setAccent(+sw.dataset.idx, sw);
+      });
     }
+
+    /* Glass intensity slider */
+    const glassSl = document.getElementById('glass-sl');
+    if (glassSl) glassSl.addEventListener('input', e => setGlass(+e.target.value));
+
+    /* 24h toggle */
+    const h24Tog = document.getElementById('h24-tog');
+    if (h24Tog) h24Tog.addEventListener('click', () => toggle24h(h24Tog));
+
+    /* Temperature unit buttons — event delegation */
+    const tempRow = document.getElementById('temp-unit-row');
+    if (tempRow) {
+      tempRow.addEventListener('click', e => {
+        const btn = e.target.closest('.unit-btn');
+        if (btn) setTempUnit(btn.dataset.celsius === 'true', btn);
+      });
+    }
+
+    /* New tab toggle */
+    const newTabTog = document.getElementById('newtab-tog');
+    if (newTabTog) newTabTog.addEventListener('click', () => toggleNewTab(newTabTog));
+
+    /* Widget toggles — each has data-widget-key + data-widget-el */
+    document.querySelectorAll('[data-widget-key]').forEach(tog => {
+      tog.addEventListener('click', () =>
+        toggleWidget(tog.dataset.widgetKey, tog.dataset.widgetEl, tog)
+      );
+    });
+
+    /* About external links */
+    document.querySelectorAll('[data-href]').forEach(link => {
+      link.addEventListener('click', () => window.open(link.dataset.href, '_blank'));
+    });
   }
 
   /* ── PUBLIC ACTIONS ── */
@@ -421,7 +480,6 @@ const Settings = (() => {
 
   async function setTempUnit(celsius, el) {
     await MohMayaMediaState.set('isCelsius', celsius);
-    /* Invalidate weather cache so next open re-fetches with new unit */
     await MohMayaMediaState.patch({ weatherCache: null, weatherCacheTime: 0 });
     document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('on'));
     el.classList.add('on');
@@ -440,8 +498,8 @@ const Settings = (() => {
     tog.classList.toggle('on', val);
     const el = document.getElementById(elId);
     if (el) {
-      el.style.transition  = 'opacity 0.3s, transform 0.3s';
-      el.style.opacity     = val ? '1' : '0';
+      el.style.transition    = 'opacity 0.3s, transform 0.3s';
+      el.style.opacity       = val ? '1' : '0';
       el.style.pointerEvents = val ? '' : 'none';
     }
   }

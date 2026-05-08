@@ -64,8 +64,17 @@ const Bookmarks = (() => {
     if (!el) return;
     const cats = useChrome ? chromeCats : Object.keys(DEFAULT_BOOKMARKS);
     el.innerHTML = cats.map(c =>
-      `<div class="bm-cat${c === currentCat ? ' on' : ''}" onclick="Bookmarks.render('${_escAttr(c)}')">${_esc(c)}</div>`
+      `<div class="bm-cat${c === currentCat ? ' on' : ''}" data-cat="${_escAttr(c)}">${_esc(c)}</div>`
     ).join('');
+
+    /* Event delegation — one listener survives re-renders */
+    if (!el._catWired) {
+      el._catWired = true;
+      el.addEventListener('click', e => {
+        const cat = e.target.closest('.bm-cat');
+        if (cat) render(cat.dataset.cat);
+      });
+    }
   }
 
   function _renderGrid() {
@@ -131,11 +140,13 @@ const Bookmarks = (() => {
   function _wireAdd() {
     const nameInp = document.getElementById('bm-add-name');
     const urlInp  = document.getElementById('bm-add-url');
+    const addBtn  = document.getElementById('bm-add-btn');
     if (!nameInp || nameInp._addWired) return;
     nameInp._addWired = true;
     [nameInp, urlInp].forEach(inp => {
       inp.addEventListener('keydown', e => { if (e.key === 'Enter') addCustom(); });
     });
+    if (addBtn) addBtn.addEventListener('click', () => addCustom());
   }
 
   /* ── ADD / DELETE CUSTOM ── */

@@ -29,7 +29,7 @@ const Panels = (() => {
           <div class="bm-add-row">
             <input type="text" id="bm-add-name" placeholder="Name"        class="bm-add-inp" />
             <input type="text" id="bm-add-url"  placeholder="https://…"   class="bm-add-inp" />
-            <button class="bm-add-btn" onclick="Bookmarks.addCustom()"><i class="ti ti-plus"></i> Add</button>
+            <button class="bm-add-btn" id="bm-add-btn"><i class="ti ti-plus"></i> Add</button>
           </div>
         </div>
       </div>`,
@@ -47,7 +47,7 @@ const Panels = (() => {
             <option value="med" selected>med</option>
             <option value="low">low</option>
           </select>
-          <button class="todo-add-btn" onclick="Todo.add()" title="Add task"><i class="ti ti-plus"></i></button>
+          <button class="todo-add-btn" id="td-add-btn" title="Add task"><i class="ti ti-plus"></i></button>
         </div>
         <div class="todo-filters" id="td-filters">
           <div class="todo-filter on" data-filter="all">All</div>
@@ -99,17 +99,17 @@ const Panels = (() => {
           <div class="timer-display" id="timer-display">25:00</div>
           <div class="timer-progress"><div class="timer-progress-fill" id="timer-bar" style="width:100%"></div></div>
           <div class="timer-btns">
-            <button class="timer-btn pri" id="timer-start-btn" onclick="Timer.toggle()">Start</button>
-            <button class="timer-btn" onclick="Timer.reset()">Reset</button>
+            <button class="timer-btn pri" id="timer-start-btn">Start</button>
+            <button class="timer-btn" id="timer-reset-btn">Reset</button>
           </div>
         </div>
         <div>
           <div class="p-label">Presets</div>
-          <div class="timer-presets">
-            <div class="timer-preset" onclick="Timer.setMins(25)">25 min</div>
-            <div class="timer-preset" onclick="Timer.setMins(50)">50 min</div>
-            <div class="timer-preset" onclick="Timer.setMins(5)">5 min break</div>
-            <div class="timer-preset" onclick="Timer.setMins(15)">15 min break</div>
+          <div class="timer-presets" id="timer-presets">
+            <div class="timer-preset" data-mins="25">25 min</div>
+            <div class="timer-preset" data-mins="50">50 min</div>
+            <div class="timer-preset" data-mins="5">5 min break</div>
+            <div class="timer-preset" data-mins="15">15 min break</div>
           </div>
         </div>
         <div>
@@ -226,8 +226,10 @@ const Panels = (() => {
           <i class="ti ti-cloud-off" style="font-size:32px;color:var(--text3);margin-bottom:8px;display:block"></i>
           <div style="font-size:13px;color:var(--text2)">Couldn't fetch weather</div>
           <div style="font-size:11px;color:var(--text3);margin-top:4px">Check your connection</div>
-          <button onclick="Panels._weatherRetry()" style="margin-top:12px;padding:7px 14px;border-radius:10px;border:1px solid var(--border);background:var(--glass2);color:var(--text);font-family:Sora,sans-serif;font-size:11px;cursor:pointer">Retry</button>
+          <button id="weather-retry-btn" style="margin-top:12px;padding:7px 14px;border-radius:10px;border:1px solid var(--border);background:var(--glass2);color:var(--text);font-family:Sora,sans-serif;font-size:11px;cursor:pointer">Retry</button>
         </div>`;
+      const retryBtn = document.getElementById('weather-retry-btn');
+      if (retryBtn) retryBtn.addEventListener('click', () => _renderWeather(true));
       return;
     }
 
@@ -259,22 +261,33 @@ const Panels = (() => {
       </div>`;
   }
 
-  function _weatherRetry() { _renderWeather(true); }
-
   /* ── AI HUB RENDER ── */
   function _renderAI() {
     const grid = document.getElementById('ai-grid');
     if (!grid) return;
     grid.innerHTML = AI_TOOLS.map(a => `
-      <div class="ai-card" onclick="window.open('${a.u}','_blank')" role="link" tabindex="0">
+      <div class="ai-card" data-url="${_esc(a.u)}" role="link" tabindex="0">
         <div class="ai-card-ico">${a.i}</div>
         <div class="ai-card-info">
-          <div class="ai-card-name">${a.n}</div>
-          <div class="ai-card-tag">${a.t}</div>
+          <div class="ai-card-name">${_esc(a.n)}</div>
+          <div class="ai-card-tag">${_esc(a.t)}</div>
         </div>
         <div class="ai-dot"></div>
       </div>`).join('');
+
+    /* Event delegation — no inline handlers */
+    if (!grid._aiWired) {
+      grid._aiWired = true;
+      grid.addEventListener('click', e => {
+        const card = e.target.closest('.ai-card');
+        if (card && card.dataset.url) window.open(card.dataset.url, '_blank');
+      });
+    }
   }
 
-  return { buildAll, wireDoc, toggle, open, close, _weatherRetry };
+  function _esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  return { buildAll, wireDoc, toggle, open, close };
 })();

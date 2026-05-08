@@ -15,13 +15,36 @@ const Timer = (() => {
 
   /* ── INIT (called when focus panel opens) ── */
   async function init() {
-    /* Restore today's session count */
     const saved = await MohMayaMediaState.get('timerSessions');
     if (saved) {
       sessions = (saved.date === new Date().toDateString()) ? (saved.count || 0) : 0;
     }
     updateUI();
     renderSessions();
+    _wireButtons();
+  }
+
+  /* Wire buttons once per panel open — elements are fresh each time */
+  function _wireButtons() {
+    const startBtn = document.getElementById('timer-start-btn');
+    const resetBtn = document.getElementById('timer-reset-btn');
+    const presets  = document.getElementById('timer-presets');
+
+    if (startBtn && !startBtn._wired) {
+      startBtn._wired = true;
+      startBtn.addEventListener('click', () => toggle());
+    }
+    if (resetBtn && !resetBtn._wired) {
+      resetBtn._wired = true;
+      resetBtn.addEventListener('click', () => reset());
+    }
+    if (presets && !presets._wired) {
+      presets._wired = true;
+      presets.addEventListener('click', e => {
+        const preset = e.target.closest('.timer-preset');
+        if (preset && preset.dataset.mins) setMins(+preset.dataset.mins);
+      });
+    }
   }
 
   /* ── CONTROLS ── */
@@ -104,7 +127,6 @@ const Timer = (() => {
       date:  new Date().toDateString(),
       count: sessions,
     });
-    /* Update focus score (20% per session, cap 100) */
     const score = Math.min(100, sessions * 20);
     await MohMayaMediaState.set('focusScore', score);
     const el = document.getElementById('stat-focus');

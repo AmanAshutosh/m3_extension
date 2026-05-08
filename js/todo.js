@@ -27,7 +27,6 @@ const Todo = (() => {
     const inp = document.getElementById('td-inp');
     if (!inp || !inp.value.trim()) return;
 
-    /* Read priority from selector (if present) */
     const priEl = document.getElementById('td-pri');
     const pri   = priEl ? priEl.value : 'med';
 
@@ -74,21 +73,42 @@ const Todo = (() => {
     const items = _filtered();
 
     if (empty) empty.style.display = items.length ? 'none' : '';
-    if (!items.length) { list.innerHTML = ''; return; }
+    if (!items.length) { list.innerHTML = ''; _wireList(); return; }
 
     list.innerHTML = items.map(t => `
       <div class="td-item${t.done ? ' done' : ''}" data-id="${t.id}">
-        <div class="td-chk" onclick="Todo.toggleDone(${t.id})">${t.done ? '✓' : ''}</div>
+        <div class="td-chk">${t.done ? '✓' : ''}</div>
         <span class="td-txt">${_esc(t.text)}</span>
-        <select class="td-pri-sel p-${t.priority}" onchange="Todo.setPriority(${t.id},this.value)">
+        <select class="td-pri-sel p-${t.priority}">
           <option value="high"${t.priority==='high'?' selected':''}>high</option>
           <option value="med"${t.priority==='med'?' selected':''}>med</option>
           <option value="low"${t.priority==='low'?' selected':''}>low</option>
         </select>
-        <span class="td-del ti ti-trash" onclick="Todo.remove(${t.id})" title="Delete"></span>
+        <span class="td-del ti ti-trash" title="Delete"></span>
       </div>`).join('');
 
+    _wireList();
     _wireFilters();
+  }
+
+  /* Event delegation on the list container — survives innerHTML re-renders */
+  function _wireList() {
+    const list = document.getElementById('td-list');
+    if (!list || list._tdListWired) return;
+    list._tdListWired = true;
+    list.addEventListener('click', e => {
+      const item = e.target.closest('.td-item');
+      if (!item) return;
+      const id = +item.dataset.id;
+      if (e.target.closest('.td-chk')) toggleDone(id);
+      if (e.target.closest('.td-del')) remove(id);
+    });
+    list.addEventListener('change', e => {
+      if (e.target.classList.contains('td-pri-sel')) {
+        const item = e.target.closest('.td-item');
+        if (item) setPriority(+item.dataset.id, e.target.value);
+      }
+    });
   }
 
   function _wireFilters() {
@@ -103,9 +123,11 @@ const Todo = (() => {
 
   function _wireInput() {
     const inp = document.getElementById('td-inp');
+    const btn = document.getElementById('td-add-btn');
     if (!inp || inp._tdWired) return;
     inp._tdWired = true;
     inp.addEventListener('keydown', e => { if (e.key === 'Enter') add(); });
+    if (btn) btn.addEventListener('click', () => add());
   }
 
   /* ── PRIORITY CHANGE ── */
@@ -113,7 +135,6 @@ const Todo = (() => {
     const t = todos.find(x => x.id === id);
     if (t) t.priority = pri;
     await _save();
-    /* Re-render just the item's select colour */
     document.querySelectorAll('.td-pri-sel').forEach(el => {
       const itemEl = el.closest('.td-item');
       if (itemEl && +itemEl.dataset.id === id) {
