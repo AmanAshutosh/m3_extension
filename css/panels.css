@@ -86,8 +86,29 @@
 }
 
 /* ────────────────────────────
-   BOOKMARKS PANEL
+   BOOKMARKS PANEL — App Drawer
    ──────────────────────────── */
+
+#panel-bookmarks {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(94vw, 1100px);
+  max-height: 82vh;
+  border-radius: 24px;
+}
+#panel-bookmarks.open {
+  animation: bmDrawerIn 0.25s var(--ease) forwards;
+}
+@keyframes bmDrawerIn {
+  from { opacity: 0; transform: translate(-50%, -47%) scale(0.96); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+#panel-bookmarks .panel-body {
+  padding: 12px 20px 20px;
+  gap: 10px;
+}
+
 .bm-search {
   display: flex;
   align-items: center;
@@ -110,11 +131,14 @@
 .bm-cats {
   display: flex;
   gap: 5px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
 }
+.bm-cats::-webkit-scrollbar { display: none; }
 .bm-cat {
   font-size: 10px;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 20px;
   border: 1px solid var(--border);
   cursor: pointer;
@@ -122,6 +146,7 @@
   transition: all 0.14s;
   white-space: nowrap;
   font-weight: 500;
+  flex-shrink: 0;
 }
 .bm-cat:hover { color: var(--text); border-color: var(--border2); }
 .bm-cat.on {
@@ -130,63 +155,96 @@
   border-color: transparent;
 }
 
+/* Sections container */
 .bm-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  flex: 1;
 }
+
+/* One category section */
+.bm-section { display: flex; flex-direction: column; gap: 8px; }
+.bm-section-hd {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0 2px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+
+/* App icon grid */
+.bm-app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 4px 6px;
+}
+
+/* App icon card — no background box, just icon + name */
 .bm-card {
-  background: var(--glass);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 6px 9px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  padding: 10px 4px 8px;
   cursor: pointer;
   transition: all 0.18s var(--ease);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
-.bm-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 0.18s;
-  background: linear-gradient(135deg, rgba(176,110,245,0.12), rgba(110,158,245,0.08));
+.bm-card:hover {
+  background: var(--glass2);
+  border-color: var(--border);
+  transform: translateY(-3px) scale(1.05);
 }
-.bm-card:hover { border-color: var(--a1); transform: translateY(-2px); }
-.bm-card:hover::before { opacity: 1; }
+
+/* Icon container */
 .bm-card-ico {
-  width: 42px;
-  height: 42px;
-  border-radius: 11px;
+  width: 52px;
+  height: 52px;
+  border-radius: 13px;
   background: var(--glass2);
   border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--a1);
   flex-shrink: 0;
 }
 .bm-favicon {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
-  border-radius: 4px;
 }
+
+/* App name */
 .bm-card-name {
   font-size: 10px;
   color: var(--text2);
   font-weight: 500;
   line-height: 1.2;
-  word-break: break-word;
+  max-width: 68px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bm-empty {
+  text-align: center;
+  padding: 30px 0;
+  color: var(--text3);
+  font-size: 12px;
 }
 
 /* ────────────────────────────
@@ -599,40 +657,40 @@
 /* ════════════════════════════════════════════════════
    BOOKMARKS — delete button, add section
    ════════════════════════════════════════════════════ */
-.bm-card { position: relative; }
 .bm-card-del {
-  position: absolute; top: 4px; right: 4px;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: rgba(245,110,110,0.22);
-  color: #f56e6e; font-size: 11px; line-height: 16px;
+  position: absolute; top: 3px; right: 5px;
+  width: 17px; height: 17px; border-radius: 50%;
+  background: rgba(245,80,80,0.9);
+  color: #fff; font-size: 13px; line-height: 17px;
   text-align: center; cursor: pointer;
   opacity: 0; transition: opacity 0.15s;
-  font-weight: 700;
+  font-weight: 700; z-index: 2;
 }
 .bm-card:hover .bm-card-del { opacity: 1; }
 
 .bm-add-section {
   border-top: 1px solid var(--border);
-  padding-top: 10px; margin-top: 4px;
+  padding-top: 12px;
 }
 .bm-add-row {
-  display: flex; flex-direction: column; gap: 6px; margin-top: 8px;
+  display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;
 }
 .bm-add-inp {
+  flex: 1; min-width: 120px;
   background: var(--glass); border: 1px solid var(--border);
   border-radius: 9px; padding: 7px 11px; color: var(--text);
   font-family: 'Sora', sans-serif; font-size: 11px; outline: none;
-  width: 100%; transition: border-color 0.2s;
+  transition: border-color 0.2s;
 }
 .bm-add-inp:focus { border-color: var(--a1); }
 .bm-add-inp::placeholder { color: var(--text3); }
 .bm-add-btn {
-  padding: 8px; border-radius: 9px; border: none;
+  padding: 8px 14px; border-radius: 9px; border: none;
   background: linear-gradient(135deg, var(--a1), var(--a2));
   color: #fff; font-family: 'Sora', sans-serif;
   font-size: 11px; cursor: pointer; font-weight: 600;
-  display: flex; align-items: center; justify-content: center; gap: 4px;
-  transition: opacity 0.15s;
+  display: flex; align-items: center; gap: 4px;
+  white-space: nowrap; transition: opacity 0.15s;
 }
 .bm-add-btn:hover { opacity: 0.85; }
 

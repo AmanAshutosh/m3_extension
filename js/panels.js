@@ -15,7 +15,12 @@ const Panels = (() => {
     bookmarks: () => `
       <div class="panel-head">
         <span class="panel-title"><i class="ti ti-bookmark"></i> Bookmarks</span>
-        <div class="panel-close" data-close="bookmarks"><i class="ti ti-x"></i></div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="panel-close" id="bm-add-toggle" title="Add bookmark">
+            <i class="ti ti-plus"></i>
+          </div>
+          <div class="panel-close" data-close="bookmarks"><i class="ti ti-x"></i></div>
+        </div>
       </div>
       <div class="panel-body">
         <div class="bm-search">
@@ -24,11 +29,10 @@ const Panels = (() => {
         </div>
         <div class="bm-cats" id="bm-cats"></div>
         <div class="bm-grid" id="bm-grid"></div>
-        <div class="bm-add-section">
-          <div class="p-label">Add Bookmark</div>
+        <div class="bm-add-section" id="bm-add-section" style="display:none">
           <div class="bm-add-row">
-            <input type="text" id="bm-add-name" placeholder="Name"        class="bm-add-inp" />
-            <input type="text" id="bm-add-url"  placeholder="https://…"   class="bm-add-inp" />
+            <input type="text" id="bm-add-name" placeholder="Name"      class="bm-add-inp" />
+            <input type="text" id="bm-add-url"  placeholder="https://…" class="bm-add-inp" />
             <button class="bm-add-btn" id="bm-add-btn"><i class="ti ti-plus"></i> Add</button>
           </div>
         </div>

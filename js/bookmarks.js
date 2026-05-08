@@ -1,8 +1,7 @@
 /* ============================================================
    MOH MAYA MEDIA — bookmarks.js
-   Chrome Bookmarks API integration with fallback to static data.
-   Shows real browser bookmarks organised by folder, plus
-   custom bookmarks persisted in Chrome Storage.
+   Mac-style app drawer: sections per category, favicon icons,
+   search, custom bookmarks (add/delete).
    ============================================================ */
 
 'use strict';
@@ -10,8 +9,8 @@
 const Bookmarks = (() => {
   let currentCat      = 'All';
   let customBookmarks = [];
-  let chromeBkm       = [];   // flat list from Chrome API
-  let chromeCats      = [];   // folder names as categories
+  let chromeBkm       = [];
+  let chromeCats      = [];
   let useChrome       = false;
   let searchQuery     = '';
 
@@ -62,12 +61,13 @@ const Bookmarks = (() => {
   function _renderCats() {
     const el = document.getElementById('bm-cats');
     if (!el) return;
-    const cats = useChrome ? chromeCats : Object.keys(DEFAULT_BOOKMARKS);
+    const cats = useChrome
+      ? chromeCats
+      : ['All', ...Object.keys(DEFAULT_BOOKMARKS).filter(k => k !== 'All')];
     el.innerHTML = cats.map(c =>
       `<div class="bm-cat${c === currentCat ? ' on' : ''}" data-cat="${_escAttr(c)}">${_esc(c)}</div>`
     ).join('');
 
-    /* Event delegation — one listener survives re-renders */
     if (!el._catWired) {
       el._catWired = true;
       el.addEventListener('click', e => {
@@ -77,59 +77,121 @@ const Bookmarks = (() => {
     }
   }
 
+  /* ── GRID — sections when "All" + no search, flat grid otherwise ── */
   function _renderGrid() {
     const el = document.getElementById('bm-grid');
     if (!el) return;
 
-    let base = useChrome
-      ? (currentCat === 'All' ? chromeBkm : chromeBkm.filter(b => b.cat === currentCat))
-      : [...(DEFAULT_BOOKMARKS[currentCat] || DEFAULT_BOOKMARKS.All)];
-
-    const customInCat = customBookmarks.filter(b => currentCat === 'All' || b.cat === currentCat);
-    let items = [...customInCat, ...base];
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      items = items.filter(b => b.n.toLowerCase().includes(q) || (b.u || '').toLowerCase().includes(q));
-    }
-
-    if (!items.length) {
-      el.innerHTML = `<div style="text-align:center;padding:20px 0;color:var(--text3);font-size:12px;grid-column:span 3">No bookmarks found</div>`;
+    if (currentCat === 'All' && !searchQuery) {
+      _renderSections(el);
+      _wireGrid(el);
       return;
     }
 
-    el.innerHTML = items.slice(0, 18).map((b, idx) => {
-      const isCustom = idx < customInCat.length;
-      return `
-        <div class="bm-card" data-url="${_escAttr(b.u)}" title="${_escAttr(b.n)}" role="link" tabindex="0">
-          <div class="bm-card-ico">${_faviconImg(b.u) || _defaultIcon(b.n)}</div>
-          <div class="bm-card-name">${_esc(b.n)}</div>
-          ${isCustom ? `<div class="bm-card-del" data-custom-idx="${idx}" title="Remove">×</div>` : ''}
-        </div>`;
-    }).join('');
+    /* Flat filtered grid */
+    let base = useChrome
+      ? (currentCat === 'All' ? chromeBkm : chromeBkm.filter(b => b.cat === currentCat))
+      : [...(DEFAULT_BOOKMARKS[currentCat] || DEFAULT_BOOKMARKS.All || [])];
 
-    /* Event delegation for card clicks & delete buttons */
-    if (!el._bmWired) {
-      el._bmWired = true;
-      el.addEventListener('click', e => {
-        const del  = e.target.closest('.bm-card-del');
-        const card = e.target.closest('.bm-card');
-        if (del) {
-          e.stopPropagation();
-          const realIdx = customBookmarks.indexOf(
-            customInCat[+del.dataset.customIdx]
-          );
-          if (realIdx >= 0) deleteCustom(realIdx);
-          return;
-        }
-        if (card && card.dataset.url) {
-          const target = MohMayaMediaState.get('openInNewTab') !== false ? '_blank' : '_self';
-          window.open(card.dataset.url, target);
-        }
-      });
+    const customInCat = customBookmarks.filter(b =>
+      currentCat === 'All' || b.cat === currentCat
+    );
+    let items = [...customInCat, ...base];
+
+    /* Deduplicate by URL */
+    const seen = new Set();
+    items = items.filter(b => { if (seen.has(b.u)) return false; seen.add(b.u); return true; });
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      items = items.filter(b =>
+        b.n.toLowerCase().includes(q) || (b.u || '').toLowerCase().includes(q)
+      );
     }
+
+    if (!items.length) {
+      el.innerHTML = `<div class="bm-empty">No bookmarks found</div>`;
+      _wireGrid(el);
+      return;
+    }
+
+    el.innerHTML = `<div class="bm-app-grid">${
+      items.slice(0, 30).map(b => {
+        const cidx = customBookmarks.findIndex(cb => cb.u === b.u);
+        return _cardHtml(b, cidx);
+      }).join('')
+    }</div>`;
+
+    _wireGrid(el);
   }
 
+  /* ── SECTIONED VIEW (All + no search) ── */
+  function _renderSections(el) {
+    let html = '';
+
+    if (customBookmarks.length) {
+      html += _sectionHtml('My Bookmarks',
+        customBookmarks.slice(0, 24).map((b, i) => _cardHtml(b, i)).join('')
+      );
+    }
+
+    if (useChrome) {
+      chromeCats.filter(c => c !== 'All').forEach(cat => {
+        const items = chromeBkm.filter(b => b.cat === cat).slice(0, 24);
+        if (items.length)
+          html += _sectionHtml(cat, items.map(b => _cardHtml(b, -1)).join(''));
+      });
+      const other = chromeBkm.filter(b => b.cat === 'All').slice(0, 24);
+      if (other.length)
+        html += _sectionHtml('Other', other.map(b => _cardHtml(b, -1)).join(''));
+    } else {
+      Object.keys(DEFAULT_BOOKMARKS).filter(k => k !== 'All').forEach(cat => {
+        const items = DEFAULT_BOOKMARKS[cat] || [];
+        if (items.length)
+          html += _sectionHtml(cat, items.map(b => _cardHtml(b, -1)).join(''));
+      });
+    }
+
+    el.innerHTML = html || `<div class="bm-empty">No bookmarks yet. Click + to add one.</div>`;
+  }
+
+  function _sectionHtml(title, cardsHtml) {
+    return `<div class="bm-section">
+      <div class="bm-section-hd">${_esc(title)}</div>
+      <div class="bm-app-grid">${cardsHtml}</div>
+    </div>`;
+  }
+
+  function _cardHtml(b, customIdx) {
+    const isCustom = customIdx >= 0;
+    return `<div class="bm-card" data-url="${_escAttr(b.u)}" title="${_escAttr(b.n)}" role="link" tabindex="0">
+      <div class="bm-card-ico">${_faviconImg(b.u) || _defaultIcon(b.n)}</div>
+      <div class="bm-card-name">${_esc(b.n)}</div>
+      ${isCustom ? `<div class="bm-card-del" data-del-idx="${customIdx}" title="Remove">×</div>` : ''}
+    </div>`;
+  }
+
+  /* One delegated listener on the grid container — survives innerHTML re-renders */
+  function _wireGrid(el) {
+    if (!el || el._bmWired) return;
+    el._bmWired = true;
+    el.addEventListener('click', e => {
+      const del  = e.target.closest('.bm-card-del');
+      const card = e.target.closest('.bm-card');
+      if (del) {
+        e.stopPropagation();
+        const idx = +del.dataset.delIdx;
+        if (!isNaN(idx) && idx >= 0) deleteCustom(idx);
+        return;
+      }
+      if (card && card.dataset.url) {
+        const target = MohMayaMediaState.get('openInNewTab') !== false ? '_blank' : '_self';
+        window.open(card.dataset.url, target);
+      }
+    });
+  }
+
+  /* ── SEARCH ── */
   function _wireSearch() {
     const inp = document.getElementById('bm-srch');
     if (!inp || inp._bsWired) return;
@@ -137,14 +199,26 @@ const Bookmarks = (() => {
     inp.addEventListener('input', e => { searchQuery = e.target.value; _renderGrid(); });
   }
 
+  /* ── ADD FORM TOGGLE + ADD INPUTS ── */
   function _wireAdd() {
+    const toggle  = document.getElementById('bm-add-toggle');
+    const section = document.getElementById('bm-add-section');
+    if (toggle && !toggle._wired) {
+      toggle._wired = true;
+      toggle.addEventListener('click', () => {
+        if (!section) return;
+        const hidden = section.style.display === 'none' || section.style.display === '';
+        section.style.display = hidden ? 'block' : 'none';
+      });
+    }
+
     const nameInp = document.getElementById('bm-add-name');
     const urlInp  = document.getElementById('bm-add-url');
     const addBtn  = document.getElementById('bm-add-btn');
     if (!nameInp || nameInp._addWired) return;
     nameInp._addWired = true;
     [nameInp, urlInp].forEach(inp => {
-      inp.addEventListener('keydown', e => { if (e.key === 'Enter') addCustom(); });
+      if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') addCustom(); });
     });
     if (addBtn) addBtn.addEventListener('click', () => addCustom());
   }

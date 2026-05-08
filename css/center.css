@@ -142,6 +142,13 @@
   font-weight: 500;
 }
 
+/* ── DAY COUNTDOWN PILL ── */
+.stat-dayend-v {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px !important;
+  letter-spacing: -0.5px;
+}
+
 /* ── DAILY QUOTE ── */
 .quote-strip {
   display: flex;
